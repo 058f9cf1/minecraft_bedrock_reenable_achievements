@@ -1,35 +1,71 @@
 import os
+from sys import argv
 
-def error(message):
+
+def finish(message):
 	print(message)
+	input("Press Enter to quit.")
 	raise SystemExit
 
+
+def get_valid_input(message, valids):
+	print()
+	while True:
+		selection = input(message)
+		try:
+			selection = int(selection)
+		except:
+			print("Error: Selection not valid. ", end='')
+		else:
+			if selection - 1 not in valids:
+				print("Error: Selection not valid. ", end='')
+			else:
+				return selection
+
+
+def find_world():
+	path = os.path.join(os.path.expanduser('~'), "AppData", "Local", "Packages", "Microsoft.MinecraftUWP_8wekyb3d8bbwe", "LocalState", "games", "com.mojang", "minecraftWorlds")
+	if not os.path.isdir(path):
+		finish("Error: Minecraft directory not found. Have you got Minecraft for Windows installed?")
+	worlds = os.listdir(path)
+	if not len(worlds):
+		finish("Error: No worlds detected. Have you started a world?")
+	
+	print("World(s) found:")
+	for i, world in enumerate(worlds, start=1):
+		levelname = os.path.join(path, world, "levelname.txt")
+		with open(levelname) as f:
+			print(str(i) + ".", f.readline())
+	selection = get_valid_input("Enter world number > ", range(len(worlds)))
+
+	return os.path.join(path, worlds[selection - 1], "level.dat")
+
+
+def write_file(file):
+	with open(file, "r+b") as f:
+		data = bytearray(f.read())
+		pos = data.find(b'\x00GameType')
+		data[pos + 9] = 0
+		pos = data.find(b'commandsEnabled')
+		data[pos + 15] = 0
+		pos = data.find(b'hasBeenLoadedInCreative')
+		data[pos + 23] = 0
+		f.seek(0)
+		f.write(data)
+
+
 if __name__ == "__main__":
-        path = os.path.join(os.path.expanduser('~'), "AppData", "Local", "Packages", "Microsoft.MinecraftUWP_8wekyb3d8bbwe", "LocalState", "games", "com.mojang", "minecraftWorlds")
-        if not os.path.isdir(path):
-                error("Error: Minecraft directory not found. Have you got Minecraft for Windows installed?")
-        worlds = os.listdir(path)
-        if not len(worlds):
-                error("Error: No worlds detected. Have you started a world?")
-        print("Worlds found:")
-        for i in range(len(worlds)):
-                levelname = os.path.join(path, worlds[i], "levelname.txt")
-                with open(levelname) as f:
-                        print(str(i + 1) + ".", f.readline())
-        selection = int(input("Enter world number > "))
-        if selection - 1 not in range(len(worlds)):
-                error("Error: Selection not valid")
-
-        data_path = os.path.join(path, worlds[selection - 1], "level.dat")
-        with open(data_path, "r+b") as f:
-                data = bytearray(f.read())
-
-                pos = data.find(b'\x00GameType')
-                data[pos + 9] = 0
-                pos = data.find(b'commandsEnabled')
-                data[pos + 15] = 0
-                pos = data.find(b'hasBeenLoadedInCreative')
-                data[pos + 23] = 0
-        
-                f.seek(0)
-                f.write(data)
+	if len(argv) > 1:
+		written = False
+		for file in argv:
+			if file.endswith('.dat'):
+				write_file(file)
+				print("Written to", file)
+				written = True
+		if written:
+			finish("Sucess!")
+	else:
+		file = find_world()
+		write_file(file)
+		print("Written to", file)
+		finish("Sucess!")
