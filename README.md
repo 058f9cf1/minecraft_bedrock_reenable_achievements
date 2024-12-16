@@ -22,10 +22,13 @@ The program can be run by double-clicking on the executable. This will open the 
 ### Dependencies
 > Requires ```Python 3``` to be installed. ```git``` is required for the first method only.
 
-- Open a terminal and run the following command (requires git to be installed): 
+### Method 1 (requires git to be installed):
+- Open a terminal and run the following commands in order:
 ```
 git clone https://github.com/058f9cf1/minecraft_bedrock_reenable_achievements.git
 cd minecraft_bedrock_reenable_achievements
 python minecraft_bedrock_reenable_achievements.py
 ```
-- Alternatively, download the file 'minecraft_bedrock_reenable_achievements.py' and double-click on the file to run it.
+
+### Method 2:
+- Download the file 'minecraft_bedrock_reenable_achievements.py' then double-click on the file to run it.
