@@ -10,17 +10,17 @@ def finish(message):
 
 def get_valid_input(message, valids):
 	print()
-	while True:
-		selection = input(message)
+	selection = 0
+	while selection - 1 not in valids:
 		try:
-			selection = int(selection)
+			selection = int(input(message))
 		except:
-			print("Error: Selection not valid. ", end='')
+			print("Error: Selection is not an integer. ", end='')
 		else:
 			if selection - 1 not in valids:
-				print("Error: Selection not valid. ", end='')
-			else:
-				return selection
+				print("Error: Selection is not in range. ", end='')
+
+	return selection
 
 
 def find_world():
@@ -30,7 +30,7 @@ def find_world():
 	worlds = os.listdir(path)
 	if not len(worlds):
 		finish("Error: No worlds detected. Have you started a world?")
-	
+
 	print("World(s) found:")
 	for i, world in enumerate(worlds, start=1):
 		levelname = os.path.join(path, world, "levelname.txt")
@@ -52,20 +52,23 @@ def write_file(file):
 		data[pos + 23] = 0
 		f.seek(0)
 		f.write(data)
+	print("Written to", file)
 
 
 if __name__ == "__main__":
 	if len(argv) > 1:
 		written = False
-		for file in argv:
-			if file.endswith('.dat'):
+		for file in argv[1:]:
+			if file.endswith('.dat') and os.path.isfile(file):
 				write_file(file)
-				print("Written to", file)
 				written = True
+			else:
+				print(file, "isn't a valid Minecraft Bedrock world.")
 		if written:
 			finish("Sucess!")
+		else:
+			finish("Nothing written.")
 	else:
 		file = find_world()
 		write_file(file)
-		print("Written to", file)
 		finish("Sucess!")
