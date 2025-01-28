@@ -32,3 +32,9 @@ python minecraft_bedrock_reenable_achievements.py
 
 ### Method 2:
 - Download the file 'minecraft_bedrock_reenable_achievements.py' then double-click on the file to run it.
+
+## Executable
+The executable can be generated with pyinstaller using the following command:
+
+```
+pyinstaller --onefile --console --optimize "2" --icon "icon.ico" "minecraft_bedrock_reenable_achievements.py"

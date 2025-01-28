@@ -34,7 +34,7 @@ def find_world():
 	print("World(s) found:")
 	for i, world in enumerate(worlds, start=1):
 		levelname = os.path.join(path, world, "levelname.txt")
-		with open(levelname) as f:
+		with open(levelname, 'r', encoding='utf-8') as f:
 			print(str(i) + ".", f.readline())
 	selection = get_valid_input("Enter world number > ", range(len(worlds)))
 
@@ -42,7 +42,7 @@ def find_world():
 
 
 def write_file(file):
-	with open(file, "r+b") as f:
+	with open(file, 'r+b') as f:
 		data = bytearray(f.read())
 		pos = data.find(b'\x00GameType')
 		data[pos + 9] = 0
