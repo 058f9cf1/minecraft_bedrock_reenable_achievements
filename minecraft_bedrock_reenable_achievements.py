@@ -1,5 +1,6 @@
 import os
 from sys import argv
+import zipfile
 
 
 def finish(message):
@@ -54,21 +55,23 @@ def write_file(file):
 		f.write(data)
 	print("Written to", file)
 
+	return True
+
 
 if __name__ == "__main__":
 	if len(argv) > 1:
 		written = False
 		for file in argv[1:]:
-			if file.endswith('.dat') and os.path.isfile(file):
-				write_file(file)
-				written = True
+			if file == 'level.dat' and os.path.isfile(file):
+				written = write_file(file)
+			elif file.endswith('.mcworld') and zipfile.is_zipfile(file):
+				print(file, "is a .mcworld file. Either import it into Minecraft or extract the level.dat file directly.")
 			else:
 				print(file, "isn't a valid Minecraft Bedrock world.")
-		if written:
-			finish("Sucess!")
-		else:
+		if not written:
 			finish("Nothing written.")
 	else:
 		file = find_world()
 		write_file(file)
-		finish("Sucess!")
+
+	finish("Sucess!")
