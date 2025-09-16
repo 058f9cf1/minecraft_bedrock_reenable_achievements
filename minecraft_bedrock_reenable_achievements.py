@@ -1,7 +1,21 @@
 import os
 from sys import argv
 import zipfile
+import shutil
 
+def make_tmpdir():
+	if os.name == "posix":
+		tmpdir_path = "/tmp/mcworld_temp"
+	elif os.name == "nt":
+		# Thanks to NT for making the temp folder changable we have to do this
+		tmpdir_path = os.path.join(os.environ.get("TEMP", "."), "mcworld_temp")
+	else:
+		tmpdir_path = -1
+
+	os.makedirs(tmpdir_path, exist_ok=True)
+	return tmpdir_path
+
+		
 
 def finish(message):
 	print(message)
@@ -47,25 +61,58 @@ def write_file(file):
 		data = bytearray(f.read())
 		pos = data.find(b'\x00GameType')
 		data[pos + 9] = 0
+		pos = data.find(b'cheatsEnabled')
+		data[pos + 13] = 0
 		pos = data.find(b'commandsEnabled')
 		data[pos + 15] = 0
 		pos = data.find(b'hasBeenLoadedInCreative')
 		data[pos + 23] = 0
+		pos = data.find(b'hasLockedBehaviorPack')
+		data[pos + 21] = 0
+		pos = data.find(b'hasLockedResourcePack')
+		data[pos + 21] = 0
+		pos = data.find(b'isFromLockedTemplate')
+		data[pos + 20] = 0
+		
 		f.seek(0)
 		f.write(data)
 	print("Written to", file)
 
 	return True
 
+def zip_folder(folder_path, output_zip):
+    with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                full_path = os.path.join(root, file)
+                rel_path = os.path.relpath(full_path, folder_path)
+                zipf.write(full_path, rel_path)
+
 
 if __name__ == "__main__":
 	if len(argv) > 1:
 		written = False
 		for file in argv[1:]:
-			if file == 'level.dat' and os.path.isfile(file):
+			if os.path.basename(file) == 'level.dat' and os.path.isfile(file):
 				written = write_file(file)
 			elif file.endswith('.mcworld') and zipfile.is_zipfile(file):
-				print(file, "is a .mcworld file. Either import it into Minecraft or extract the level.dat file directly.")
+				print(file, "is an mcworld file. Attempting write but it may fail")
+				tempdir = make_tmpdir()
+				if tempdir < 0:
+					print("Error: Write attempt failed. Either import", file, "into Minecraft or extract the level.dat file directly.")
+				with zipfile.ZipFile(file, 'r') as zip_ref:
+					zip_ref.extractall(tempdir)
+
+				level_dat_path = os.path.join(tempdir, "level.dat")
+				if os.path.isfile(level_dat_path):
+					written = write_file(level_dat_path)
+				else:
+					print("level.dat not found in extracted mcworld.")
+
+				zip_folder(tempdir, file)
+				shutil.rmtree(tempdir)
+			elif not os.path.isfile(file) and os.path.isfile(f"{file}/level.dat"):
+				written = write_file(f"{file}/level.dat")
 			else:
 				print(file, "isn't a valid Minecraft Bedrock world.")
 		if not written:
