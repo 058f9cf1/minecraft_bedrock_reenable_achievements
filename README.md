@@ -15,7 +15,7 @@ Download the latest release from the [releases](https://github.com/058f9cf1/mine
 ## Usage
 The program can be run by double-clicking on the executable. This will open the command prompt and search the disk for Minecraft Bedrock worlds. You can select a world by entering the number next to the world name. The program, once completed, can be exited by pressing 'Enter'.
 
-```level.dat``` files can also be dragged and dropped onto the executable in order to do multiple worlds at the same time.
+World directories and ```level.dat``` files can also be dragged and dropped onto the executable in order to do multiple worlds at the same time.
 
 ## Running from source
 

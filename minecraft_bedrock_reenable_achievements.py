@@ -1,6 +1,10 @@
+#!/usr/bin/env python3
+
 import os
 from sys import argv
 import zipfile
+import tempfile
+import shutil
 
 
 def finish(message):
@@ -47,13 +51,20 @@ def write_file(file):
 		data = bytearray(f.read())
 		pos = data.find(b'\x00GameType')
 		data[pos + 9] = 0
+		pos = data.find(b'cheatsEnabled')
+		data[pos + 13] = 0
 		pos = data.find(b'commandsEnabled')
 		data[pos + 15] = 0
 		pos = data.find(b'hasBeenLoadedInCreative')
 		data[pos + 23] = 0
+		pos = data.find(b'hasLockedBehaviorPack')
+		data[pos + 21] = 0
+		pos = data.find(b'hasLockedResourcePack')
+		data[pos + 21] = 0
+		pos = data.find(b'isFromLockedTemplate')
+		data[pos + 20] = 0
 		f.seek(0)
 		f.write(data)
-	print("Written to", file)
 
 	return True
 
@@ -62,10 +73,29 @@ if __name__ == "__main__":
 	if len(argv) > 1:
 		written = False
 		for file in argv[1:]:
-			if file == 'level.dat' and os.path.isfile(file):
+			if os.path.isfile(file) and os.path.basename(file) == 'level.dat':
 				written = write_file(file)
+				print("Written to", file)
+			elif not os.path.isfile(file) and os.path.isfile(os.path.join(file, 'level.dat')):
+				written = write_file(os.path.join(file, 'level.dat'))
+				print("Written to", os.path.join(file, 'level.dat'))
 			elif file.endswith('.mcworld') and zipfile.is_zipfile(file):
-				print(file, "is a .mcworld file. Either import it into Minecraft or extract the level.dat file directly.")
+				tmp_dir = os.path.join(tempfile.gettempdir(), "mcworld")
+				os.makedirs(tmp_dir, exist_ok=True)
+				with zipfile.ZipFile(file, 'r') as zip_ref:
+					zip_ref.extractall(tmp_dir)
+
+				tmp_level = os.path.join(tmp_dir, "level.dat")
+				if os.path.isfile(tmp_level):
+					written = write_file(tmp_level)
+					shutil.make_archive(file, format='zip', root_dir=tmp_dir)
+					os.remove(file)
+					os.rename(file + ".zip", file)
+					print("Written to", file)
+				else:
+					print(file, "isn't a valid .mcworld archive")
+
+				shutil.rmtree(tmp_dir)
 			else:
 				print(file, "isn't a valid Minecraft Bedrock world.")
 		if not written:
@@ -73,5 +103,6 @@ if __name__ == "__main__":
 	else:
 		file = find_world()
 		write_file(file)
+		print("Written to", file)
 
 	finish("Sucess!")
