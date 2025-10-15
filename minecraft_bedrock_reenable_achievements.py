@@ -8,12 +8,16 @@ import shutil
 
 
 def finish(message):
+	"""Display a message to the user then exit the program"""
+
 	print(message)
 	input("Press Enter to quit.")
 	raise SystemExit
 
 
 def get_valid_input(message, valids):
+	"""User selects option from a given list"""
+
 	print()
 	selection = 0
 	while selection - 1 not in valids:
@@ -29,56 +33,61 @@ def get_valid_input(message, valids):
 
 
 def find_world():
+	"""Search the disk for Minecraft Bedrock worlds"""
+
 	path = os.path.join(os.path.expanduser('~'), "AppData", "Local", "Packages", "Microsoft.MinecraftUWP_8wekyb3d8bbwe", "LocalState", "games", "com.mojang", "minecraftWorlds")
+
+	#Quit if Minecraft Bedrock isn't installed
 	if not os.path.isdir(path):
 		finish("Error: Minecraft directory not found. Have you got Minecraft for Windows installed?")
+
+	#Quit if no worlds have been started
 	worlds = os.listdir(path)
 	if not len(worlds):
 		finish("Error: No worlds detected. Have you started a world?")
 
+	#Display all of the worlds found then ask the user for a selection
 	print("World(s) found:")
 	for i, world in enumerate(worlds, start=1):
 		levelname = os.path.join(path, world, "levelname.txt")
 		with open(levelname, 'r', encoding='utf-8') as f:
-			print(str(i) + ".", f.readline())
+			print(str(i) + '.', f.readline())
 	selection = get_valid_input("Enter world number > ", range(len(worlds)))
 
 	return os.path.join(path, worlds[selection - 1], "level.dat")
 
 
 def write_file(file):
+	"""Find the flags and reset their values, then write back to file"""
+
+	flags = [b'\x00GameType', b'cheatsEnabled', b'commandsEnabled', b'hasBeenLoadedInCreative', b'hasLockedBehaviorPack', b'hasLockedResourcePack' ,b'isFromLockedTemplate']
 	with open(file, 'r+b') as f:
 		data = bytearray(f.read())
-		pos = data.find(b'\x00GameType')
-		data[pos + 9] = 0
-		pos = data.find(b'cheatsEnabled')
-		data[pos + 13] = 0
-		pos = data.find(b'commandsEnabled')
-		data[pos + 15] = 0
-		pos = data.find(b'hasBeenLoadedInCreative')
-		data[pos + 23] = 0
-		pos = data.find(b'hasLockedBehaviorPack')
-		data[pos + 21] = 0
-		pos = data.find(b'hasLockedResourcePack')
-		data[pos + 21] = 0
-		pos = data.find(b'isFromLockedTemplate')
-		data[pos + 20] = 0
+		for flag in flags:
+			pos = data.find(flag) + len(flag)
+			data[pos] = 0
 		f.seek(0)
 		f.write(data)
+	print("Written to", file)
 
 	return True
 
 
 if __name__ == "__main__":
+	#Worlds given via args
 	if len(argv) > 1:
 		written = False
 		for file in argv[1:]:
+
+			#Sinlge level.dat file
 			if os.path.isfile(file) and os.path.basename(file) == 'level.dat':
 				written = write_file(file)
-				print("Written to", file)
+
+			#World directory containing level.dat
 			elif not os.path.isfile(file) and os.path.isfile(os.path.join(file, 'level.dat')):
 				written = write_file(os.path.join(file, 'level.dat'))
-				print("Written to", os.path.join(file, 'level.dat'))
+
+			#.mcworld
 			elif file.endswith('.mcworld') and zipfile.is_zipfile(file):
 				tmp_dir = os.path.join(tempfile.gettempdir(), "mcworld")
 				os.makedirs(tmp_dir, exist_ok=True)
@@ -91,18 +100,22 @@ if __name__ == "__main__":
 					shutil.make_archive(file, format='zip', root_dir=tmp_dir)
 					os.remove(file)
 					os.rename(file + ".zip", file)
-					print("Written to", file)
+					print("Compressed to", file)
 				else:
 					print(file, "isn't a valid .mcworld archive")
 
 				shutil.rmtree(tmp_dir)
+
 			else:
 				print(file, "isn't a valid Minecraft Bedrock world.")
+
 		if not written:
 			finish("Nothing written.")
+
+	#Search for a world
 	else:
+		print("No worlds provided, searching disk...")
 		file = find_world()
 		write_file(file)
-		print("Written to", file)
 
 	finish("Sucess!")
