@@ -80,15 +80,15 @@ if __name__ == "__main__":
 		for file in argv[1:]:
 
 			#Sinlge level.dat file
-			if os.path.isfile(file) and os.path.basename(file) == 'level.dat':
+			if os.path.isfile(file) and os.path.basename(file) == "level.dat":
 				written = write_file(file)
 
 			#World directory containing level.dat
-			elif not os.path.isfile(file) and os.path.isfile(os.path.join(file, 'level.dat')):
-				written = write_file(os.path.join(file, 'level.dat'))
+			elif not os.path.isfile(file) and os.path.isfile(os.path.join(file, "level.dat")):
+				written = write_file(os.path.join(file, "level.dat"))
 
-			#.mcworld
-			elif file.endswith('.mcworld') and zipfile.is_zipfile(file):
+			#Zipped worlds
+			elif zipfile.is_zipfile(file):
 				tmp_dir = os.path.join(tempfile.gettempdir(), "mcworld")
 				os.makedirs(tmp_dir, exist_ok=True)
 				with zipfile.ZipFile(file, 'r') as zip_ref:
@@ -102,7 +102,7 @@ if __name__ == "__main__":
 					os.rename(file + ".zip", file)
 					print("Compressed to", file)
 				else:
-					print(file, "isn't a valid .mcworld archive")
+					print(file, "isn't a valid Minecraft Bedrock world archive.")
 
 				shutil.rmtree(tmp_dir)
 
@@ -112,10 +112,12 @@ if __name__ == "__main__":
 		if not written:
 			finish("Nothing written.")
 
-	#Search for a world
-	else:
+	#Search for a world if on Windows
+	elif os.name == 'nt':
 		print("No worlds provided, searching disk...")
 		file = find_world()
 		write_file(file)
+	else:
+		finish("Error: World must be provided via command-line arguments on Linux/macOS")
 
 	finish("Sucess!")

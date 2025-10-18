@@ -9,32 +9,37 @@ A tool for allowing you to earn achievements on a Minecraft Bedrock world that h
 
 Works on Minecraft Bedrock worlds version 1.21.0 and higher. It may also work on versions below, but this is untested.
 
+
 ## Installation
-Download the latest release from the [releases](https://github.com/058f9cf1/minecraft_bedrock_reenable_achievements/releases) section.
+Download the latest stable release from the [releases](https://github.com/058f9cf1/minecraft_bedrock_reenable_achievements/releases) section.
+
+### Latest development version
+Clone the repository with ```git clone https://github.com/058f9cf1/minecraft_bedrock_reenable_achievements.git```.
+
+
+## Running
+
+### Python file (Recommended method)
+Ensure Python 3 is installed then either double-click on the file or run ```python minecraft_bedrock_reenable_achievements.py``` in a terminal from the directory containing the file.
+
+### Standalone executable (Windows only)
+Either double-click on the executable or run ```.\minecraft_bedrock_reenable_achievements.exe``` in a terminal from the directory containing the executable.
+
 
 ## Usage
-The program can be run by double-clicking on the executable. This will open the command prompt and search the disk for Minecraft Bedrock worlds. You can select a world by entering the number next to the world name. The program, once completed, can be exited by pressing 'Enter'.
+When the program is run by itself on Windows, it will search the disk for Minecraft Bedrock worlds that can currently be played. You can select a world from the list of worlds found by entering the number next to the world name.
 
-World directories and ```level.dat``` files can also be dragged and dropped onto the executable in order to do multiple worlds at the same time.
+On any operating system, worlds can be done individually or multiple at once by either providing them as arguments when running the program or, on Windows, dragging-and-dropping them on to the standalone executable. The following world formats are accepted:
+- World directories
+- ```level.dat``` files
+- Zipped world directories
+- .mcworld files
 
-## Running from source
+The program, once completed, can be exited by pressing 'Enter'.
 
-### Dependencies
-> Requires ```Python 3``` to be installed. ```git``` is required for the first method only.
-
-### Method 1 (requires git to be installed):
-- Open a terminal and run the following commands in order:
-```
-git clone https://github.com/058f9cf1/minecraft_bedrock_reenable_achievements.git
-cd minecraft_bedrock_reenable_achievements
-python minecraft_bedrock_reenable_achievements.py
-```
-
-### Method 2:
-- Download the file 'minecraft_bedrock_reenable_achievements.py' then double-click on the file to run it.
 
 ## Executable
-The executable can be generated with pyinstaller using the following command:
+The standalone executable can be generated with pyinstaller using the following command:
 
 ```
 pyinstaller --onefile --console --optimize "2" --icon "icon.ico" "minecraft_bedrock_reenable_achievements.py"
