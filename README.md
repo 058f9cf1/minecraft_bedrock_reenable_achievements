@@ -1,4 +1,4 @@
-# Re-enable Minecraft Bedrock Achievements
+# Re-enable Minecraft Bedrock Achievements 1.21.130+
 A tool for allowing you to earn achievements on a Minecraft Bedrock world that has enabled cheats or used creative mode. After the program is run, cheats will be disabled and the default world game mode will be set to survival. Any players set to creative mode or changed gamerules will remain changed.
 
 > [!IMPORTANT]
