@@ -7,7 +7,7 @@ A tool for allowing you to earn achievements on a Minecraft Bedrock world that h
 > [!IMPORTANT]
 > This is a tool for worlds on 'Minecraft for Windows', not 'Minecraft: Java Edition' or any other Minecraft Bedrock version. After the program has completed, other players on all Bedrock versions will be able to join the world and unlock achievements.
 
-Works on Minecraft Bedrock worlds version 1.21.0 and higher. It may also work on versions below, but this is untested.
+Works on Minecraft Bedrock worlds version 1.21.130 and higher.
 
 
 ## Installation
