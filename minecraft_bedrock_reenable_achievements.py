@@ -8,157 +8,157 @@ import shutil
 
 
 def finish(message):
-	"""Display a message to the user then exit the program"""
+    """Display a message to the user then exit the program"""
 
-	print(message)
-	input("Press Enter to quit.")
-	raise SystemExit
+    print(message)
+    input("Press Enter to quit.")
+    raise SystemExit
 
 
 def get_valid_input(message, valids):
-	"""User selects option from a given list"""
+    """User selects option from a given list"""
 
-	print()
-	selection = 0
-	while selection - 1 not in valids:
-		try:
-			selection = int(input(message))
-		except ValueError:
-			print("Error: Selection is not an integer. ", end='')
-		else:
-			if selection - 1 not in valids:
-				print("Error: Selection is not in range. ", end='')
+    print()
+    selection = 0
+    while selection - 1 not in valids:
+        try:
+            selection = int(input(message))
+        except ValueError:
+            print("Error: Selection is not an integer. ", end='')
+        else:
+            if selection - 1 not in valids:
+                print("Error: Selection is not in range. ", end='')
 
-	return selection
+    return selection
 
 
 def find_world():
-	"""Search the disk for Minecraft Bedrock worlds"""
+    """Search the disk for Minecraft Bedrock worlds"""
 
-	base_path = os.path.join(
-		os.path.expanduser('~'),
-		"AppData",
-		"Roaming",
-		"Minecraft Bedrock",
-		"Users"
-	)
+    base_path = os.path.join(
+        os.path.expanduser('~'),
+        "AppData",
+        "Roaming",
+        "Minecraft Bedrock",
+        "Users"
+    )
 
-	# Quit if Minecraft Bedrock isn't installed
-	if not os.path.isdir(base_path):
-		finish("Error: Minecraft Bedrock directory not found. Have you got Minecraft for Windows installed?")
+    # Quit if Minecraft Bedrock isn't installed
+    if not os.path.isdir(base_path):
+        finish("Error: Minecraft Bedrock directory not found. Have you got Minecraft for Windows installed?")
 
-	# Get a list of all the worlds
-	worlds = []
-	for user_id in os.listdir(base_path):
-		worlds_path = os.path.join(base_path, user_id, "games", "com.mojang", "minecraftWorlds")
-		if os.path.isdir(worlds_path):
-			for world in os.listdir(worlds_path):
-				worlds.append(os.path.join(worlds_path, world))
+    # Get a list of all the worlds
+    worlds = []
+    for user_id in os.listdir(base_path):
+        worlds_path = os.path.join(base_path, user_id, "games", "com.mojang", "minecraftWorlds")
+        if os.path.isdir(worlds_path):
+            for world in os.listdir(worlds_path):
+                worlds.append(os.path.join(worlds_path, world))
 
-	# Quit if no worlds have been started
-	if not worlds:
-		finish("Error: No worlds detected. Have you started a world?")
+    # Quit if no worlds have been started
+    if not worlds:
+        finish("Error: No worlds detected. Have you started a world?")
 
-	worlds.sort()
+    worlds.sort()
 
-	# Display all of the worlds found then ask the user for a selection
-	print("World(s) found:")
-	for i, world in enumerate(worlds, start=1):
+    # Display all of the worlds found then ask the user for a selection
+    print("World(s) found:")
+    for i, world in enumerate(worlds, start=1):
 
-		# Get the id of the user for the current world
-		user_id = world
-		for _ in range(4):
-			user_id = os.path.dirname(user_id)
-		user_id = os.path.basename(user_id)
+        # Get the id of the user for the current world
+        user_id = world
+        for _ in range(4):
+            user_id = os.path.dirname(user_id)
+        user_id = os.path.basename(user_id)
 
-		levelname = os.path.join(world, "levelname.txt")
-		if os.path.isfile(levelname):
-			with open(levelname, 'r', encoding='utf-8') as f:
-				print(f"{i}. {f.readline().strip()} (User ID: {user_id})")
-		else:
-			print(f"{i}. {world} (User ID: {user_id})")
-	selection = get_valid_input("Enter world number > ", range(len(worlds)))
+        levelname = os.path.join(world, "levelname.txt")
+        if os.path.isfile(levelname):
+            with open(levelname, 'r', encoding='utf-8') as f:
+                print(f"{i}. {f.readline().strip()} (User ID: {user_id})")
+        else:
+            print(f"{i}. {world} (User ID: {user_id})")
+    selection = get_valid_input("Enter world number > ", range(len(worlds)))
 
-	return os.path.join(worlds[selection - 1], "level.dat")
+    return os.path.join(worlds[selection - 1], "level.dat")
 
 
 def write_file(file):
-	"""Find the flags and reset their values, then write back to file"""
+    """Find the flags and reset their values, then write back to file"""
 
-	flags = [
-		b'\x00GameType',
-		b'cheatsEnabled',
-		b'commandsEnabled',
-		b'hasBeenLoadedInCreative',
-		b'hasLockedBehaviorPack',
-		b'hasLockedResourcePack',
-		b'isFromLockedTemplate'
-	]
+    flags = [
+        b'\x00GameType',
+        b'cheatsEnabled',
+        b'commandsEnabled',
+        b'hasBeenLoadedInCreative',
+        b'hasLockedBehaviorPack',
+        b'hasLockedResourcePack',
+        b'isFromLockedTemplate'
+    ]
 
-	with open(file, 'r+b') as f:
-		data = bytearray(f.read())
-		for flag in flags:
-			pos = data.find(flag)
-			if pos >= 0:
-				pos += len(flag)
-				data[pos] = 0
+    with open(file, 'r+b') as f:
+        data = bytearray(f.read())
+        for flag in flags:
+            pos = data.find(flag)
+            if pos >= 0:
+                pos += len(flag)
+                data[pos] = 0
 
-		f.seek(0)
-		f.write(data)
+        f.seek(0)
+        f.write(data)
 
-	print("Written to", file)
+    print("Written to", file)
 
-	return True
+    return True
 
 
 if __name__ == "__main__":
-	# Worlds given via args
-	if len(argv) > 1:
-		written = False
-		for file in argv[1:]:
+    # Worlds given via args
+    if len(argv) > 1:
+        written = False
+        for file in argv[1:]:
 
-			# Single level.dat file
-			if os.path.isfile(file) and os.path.basename(file) == "level.dat":
-				written = write_file(file)
+            # Single level.dat file
+            if os.path.isfile(file) and os.path.basename(file) == "level.dat":
+                written = write_file(file)
 
-			# World directory containing level.dat
-			elif os.path.isdir(file) and os.path.isfile(os.path.join(file, "level.dat")):
-				written = write_file(os.path.join(file, "level.dat"))
+            # World directory containing level.dat
+            elif os.path.isdir(file) and os.path.isfile(os.path.join(file, "level.dat")):
+                written = write_file(os.path.join(file, "level.dat"))
 
-			# Zipped worlds
-			elif zipfile.is_zipfile(file):
-				tmp_dir = os.path.join(tempfile.gettempdir(), "mcworld")
-				if os.path.isdir(tmp_dir):
-					shutil.rmtree(tmp_dir)
-				os.makedirs(tmp_dir, exist_ok=True)
+            # Zipped worlds
+            elif zipfile.is_zipfile(file):
+                tmp_dir = os.path.join(tempfile.gettempdir(), "mcworld")
+                if os.path.isdir(tmp_dir):
+                    shutil.rmtree(tmp_dir)
+                os.makedirs(tmp_dir, exist_ok=True)
 
-				with zipfile.ZipFile(file, 'r') as zip_ref:
-					zip_ref.extractall(tmp_dir)
+                with zipfile.ZipFile(file, 'r') as zip_ref:
+                    zip_ref.extractall(tmp_dir)
 
-				tmp_level = os.path.join(tmp_dir, "level.dat")
-				if os.path.isfile(tmp_level):
-					written = write_file(tmp_level)
-					shutil.make_archive(file, format='zip', root_dir=tmp_dir)
-					os.remove(file)
-					os.rename(file + ".zip", file)
-					print("Compressed to", file)
-				else:
-					print(file, "isn't a valid Minecraft Bedrock world archive.")
+                tmp_level = os.path.join(tmp_dir, "level.dat")
+                if os.path.isfile(tmp_level):
+                    written = write_file(tmp_level)
+                    shutil.make_archive(file, format='zip', root_dir=tmp_dir)
+                    os.remove(file)
+                    os.rename(file + ".zip", file)
+                    print("Compressed to", file)
+                else:
+                    print(file, "isn't a valid Minecraft Bedrock world archive.")
 
-				shutil.rmtree(tmp_dir)
+                shutil.rmtree(tmp_dir)
 
-			else:
-				print(file, "isn't a valid Minecraft Bedrock world.")
+            else:
+                print(file, "isn't a valid Minecraft Bedrock world.")
 
-		if not written:
-			finish("Nothing written.")
+        if not written:
+            finish("Nothing written.")
 
-	# Search for a world if on Windows
-	elif os.name == 'nt':
-		print("No worlds provided, searching disk...")
-		file = find_world()
-		write_file(file)
-	else:
-		finish("Error: World must be provided via command-line arguments on Linux/macOS")
+    # Search for a world if on Windows
+    elif os.name == 'nt':
+        print("No worlds provided, searching disk...")
+        file = find_world()
+        write_file(file)
+    else:
+        finish("Error: World must be provided via command-line arguments on Linux/macOS")
 
-	finish("Success!")
+    finish("Success!")
