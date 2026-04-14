@@ -23,7 +23,7 @@ def get_valid_input(message, valids):
 	while selection - 1 not in valids:
 		try:
 			selection = int(input(message))
-		except:
+		except ValueError:
 			print("Error: Selection is not an integer. ", end='')
 		else:
 			if selection - 1 not in valids:
@@ -32,8 +32,8 @@ def get_valid_input(message, valids):
 	return selection
 
 
-def find_user_worlds_root():
-	"""Find Minecraft Bedrock user folders and let the user choose one"""
+def find_world():
+	"""Search the disk for Minecraft Bedrock worlds"""
 
 	base_path = os.path.join(
 		os.path.expanduser('~'),
@@ -43,69 +43,43 @@ def find_user_worlds_root():
 		"Users"
 	)
 
+	# Quit if Minecraft Bedrock isn't installed
 	if not os.path.isdir(base_path):
-		finish("Error: Minecraft Bedrock Users directory not found.")
+		finish("Error: Minecraft Bedrock directory not found. Have you got Minecraft for Windows installed?")
 
-	user_ids = []
-	for entry in os.listdir(base_path):
-		full_path = os.path.join(base_path, entry)
-		worlds_path = os.path.join(full_path, "games", "com.mojang", "minecraftWorlds")
-		if os.path.isdir(full_path) and os.path.isdir(worlds_path):
-			user_ids.append(entry)
-
-	if not user_ids:
-		finish("Error: No valid Minecraft Bedrock users found.")
-
-	user_ids.sort()
-
-	print("User(s) found:")
-	for i, user_id in enumerate(user_ids, start=1):
-		print(str(i) + '.', user_id)
-
-	selection = get_valid_input("Which user do you want to edit? > ", range(len(user_ids)))
-	selected_user_id = user_ids[selection - 1]
-
-	return os.path.join(base_path, selected_user_id, "games", "com.mojang", "minecraftWorlds")
-
-
-def find_world():
-	"""Search the selected user folder for Minecraft Bedrock worlds"""
-
-	path = find_user_worlds_root()
-
-	if not os.path.isdir(path):
-		finish("Error: World directory not found for the selected user.")
-
+	# Get a list of all the worlds
 	worlds = []
-	for entry in os.listdir(path):
-		world_path = os.path.join(path, entry)
-		level_dat_path = os.path.join(world_path, "level.dat")
-		if os.path.isdir(world_path) and os.path.isfile(level_dat_path):
-			worlds.append(entry)
+	for user_id in os.listdir(base_path):
+		worlds_path = os.path.join(base_path, user_id, "games", "com.mojang", "minecraftWorlds")
+		if os.path.isdir(worlds_path):
+			for world in os.listdir(worlds_path):
+				worlds.append(os.path.join(worlds_path, world))
 
+	# Quit if no worlds have been started
 	if not worlds:
-		finish("Error: No worlds detected for the selected user.")
+		finish("Error: No worlds detected. Have you started a world?")
 
-	print()
+	worlds.sort()
+
+	# Display all of the worlds found then ask the user for a selection
 	print("World(s) found:")
 	for i, world in enumerate(worlds, start=1):
-		levelname = os.path.join(path, world, "levelname.txt")
-		world_name = world
 
+		# Get the id of the user for the current world
+		user_id = world
+		for _ in range(4):
+			user_id = os.path.dirname(user_id)
+		user_id = os.path.basename(user_id)
+
+		levelname = os.path.join(world, "levelname.txt")
 		if os.path.isfile(levelname):
-			try:
-				with open(levelname, 'r', encoding='utf-8') as f:
-					first_line = f.readline().strip()
-					if first_line:
-						world_name = first_line
-			except:
-				pass
-
-		print(str(i) + '.', world_name)
-
+			with open(levelname, 'r', encoding='utf-8') as f:
+				print(f"{i}. {f.readline().strip()} (User ID: {user_id})")
+		else:
+			print(f"{i}. {world} (User ID: {user_id})")
 	selection = get_valid_input("Enter world number > ", range(len(worlds)))
 
-	return os.path.join(path, worlds[selection - 1], "level.dat")
+	return os.path.join(worlds[selection - 1], "level.dat")
 
 
 def write_file(file):
@@ -123,13 +97,11 @@ def write_file(file):
 
 	with open(file, 'r+b') as f:
 		data = bytearray(f.read())
-
 		for flag in flags:
 			pos = data.find(flag)
-			if pos != -1:
+			if pos >= 0:
 				pos += len(flag)
-				if pos < len(data):
-					data[pos] = 0
+				data[pos] = 0
 
 		f.seek(0)
 		f.write(data)
