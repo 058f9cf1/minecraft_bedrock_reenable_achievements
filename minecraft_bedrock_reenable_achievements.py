@@ -62,7 +62,7 @@ def find_world():
     worlds.sort()
 
     # Display all of the worlds found then ask the user for a selection
-    print("World(s) found:")
+    print("\nWorld(s) found:")
     for i, world in enumerate(worlds, start=1):
 
         # Get the id of the user for the current world
@@ -74,7 +74,7 @@ def find_world():
         levelname = os.path.join(world, "levelname.txt")
         if os.path.isfile(levelname):
             with open(levelname, 'r', encoding='utf-8') as f:
-                print(f"{i}. {f.readline().strip()} (User ID: {user_id})")
+                print(f"{i}. {f.readline().strip()}  (User ID: {user_id})")
         else:
             print(f"{i}. {world} (User ID: {user_id})")
     selection = get_valid_input("Enter world number > ", range(len(worlds)))
