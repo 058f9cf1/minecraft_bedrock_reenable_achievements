@@ -32,7 +32,7 @@ def get_valid_input(message, valids):
     return selection
 
 
-def find_world():
+def find_worlds():
     """Search the disk for Minecraft Bedrock worlds"""
 
     base_path = os.path.join(
@@ -43,9 +43,9 @@ def find_world():
         "Users"
     )
 
-    # Quit if Minecraft Bedrock isn't installed
+    # Stop searching if Minecraft Bedrock isn't installed
     if not os.path.isdir(base_path):
-        finish("Error: Minecraft Bedrock directory not found. Have you got Minecraft for Windows installed?")
+        return False
 
     # Get a list of all the worlds
     worlds = []
@@ -55,13 +55,14 @@ def find_world():
             for world in os.listdir(worlds_path):
                 worlds.append(os.path.join(worlds_path, world))
 
-    # Quit if no worlds have been started
-    if not worlds:
-        finish("Error: No worlds detected. Have you started a world?")
-
     worlds.sort()
 
-    # Display all of the worlds found then ask the user for a selection
+    return worlds
+
+
+def select_world(worlds):
+    """Display all of the worlds found then ask the user for a selection"""
+
     print("\nWorld(s) found:")
     for i, world in enumerate(worlds, start=1):
 
@@ -153,12 +154,25 @@ if __name__ == "__main__":
         if not written:
             finish("Nothing written.")
 
+        finish("Success!")
+
     # Search for a world if on Windows
     elif os.name == 'nt':
         print("No worlds provided, searching disk...")
-        file = find_world()
-        write_file(file)
+        worlds = find_worlds()
+
+        # Quit if Minecraft Bedrock isn't installed
+        if worlds is False:
+            finish("Error: Minecraft Bedrock directory not found. Have you got Minecraft for Windows installed?")
+
+        # Quit if no worlds have been started
+        elif not worlds:
+            finish("Error: No worlds detected. Have you started a world?")
+
+        world = select_world(worlds)
+        write_file(world)
+
+        finish("Success!")
+
     else:
         finish("Error: World must be provided via command-line arguments on Linux/macOS")
-
-    finish("Success!")
